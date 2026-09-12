@@ -1,0 +1,8 @@
+{
+  "appId": "com.lantb.drawnix",
+  "appName": "Drawnix",
+  "webDir": "dist/apps/web",
+  "server": {
+    "androidScheme": "https"
+  }
+}

@@ -11,32 +11,36 @@ permissions:
 
 jobs:
   build-apk:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 40
+    runs-on: windows-latest
+    timeout-minutes: 45
     steps:
       - name: Runner smoke test
-        run: echo "runner ready"
+        run: Write-Host "runner ready"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20.20.2
-          cache: npm
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
       - uses: android-actions/setup-android@v3
-      - run: npm ci
-      - run: npm run build:web
-      - run: npm install --no-save --package-lock=false @capacitor/core@8.2.0 @capacitor/android@8.2.0 @capacitor/cli@8.2.0
-      - run: |
-          if [ ! -d android ]; then npx cap add android; fi
+      - name: Install web dependencies
+        run: npm ci
+      - name: Build Drawnix web app
+        run: npm run build:web
+      - name: Install Capacitor tooling
+        run: npm install --no-save --package-lock=false @capacitor/core@8.2.0 @capacitor/android@8.2.0 @capacitor/cli@8.2.0
+      - name: Generate Android project
+        run: |
+          if (!(Test-Path 'android')) { npx cap add android }
           npx cap sync android
-      - run: |
-          chmod +x android/gradlew
-          cd android
-          ./gradlew assembleDebug --stacktrace
-      - uses: actions/upload-artifact@v4
+      - name: Build debug APK
+        run: |
+          Set-Location android
+          .\gradlew.bat assembleDebug --stacktrace
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: drawnix-android-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
